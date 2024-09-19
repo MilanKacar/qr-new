@@ -25,6 +25,7 @@
         width: 100%;
         display: block;
         margin: 0 auto;
+        border-radius: 10px;
       }
 
       #qr-box-overlay {
@@ -35,20 +36,112 @@
         aspect-ratio: 1/1; /* Maintain square aspect ratio */
         transform: translate(-50%, -50%);
         box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7); /* Full screen overlay */
-        border-radius: 10px; /* Rounded corners */
+        border: 2px solid rgba(255, 255, 255, 0.8);
         z-index: 1;
+        pointer-events: none;
+      }
+
+      /* Targeting guide */
+      .corner {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border: 4px solid rgba(255, 255, 255, 0.8);
+      }
+
+      .corner.top-left {
+        top: 0;
+        left: 0;
+        border-right: none;
+        border-bottom: none;
+      }
+
+      .corner.top-right {
+        top: 0;
+        right: 0;
+        border-left: none;
+        border-bottom: none;
+      }
+
+      .corner.bottom-left {
+        bottom: 0;
+        left: 0;
+        border-right: none;
+        border-top: none;
+      }
+
+      .corner.bottom-right {
+        bottom: 0;
+        right: 0;
+        border-left: none;
+        border-top: none;
+      }
+
+      /* Feedback and spinner */
+      #feedback {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: none;
+        z-index: 2;
+        font-size: 1.2em;
+      }
+
+      #spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 6px solid rgba(0, 0, 0, 0.1);
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        display: none;
+        z-index: 3;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+
+      .green-border {
+        border-color: green !important;
+        box-shadow: 0 0 15px 5px green;
       }
     </style>
   </head>
   <body>
     <div id="qr-video-container">
       <video id="qr-video" autoplay playsinline></video>
-      <div id="qr-box-overlay"></div>
+      <div id="qr-box-overlay">
+        <div class="corner top-left"></div>
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
+        <div class="corner bottom-right"></div>
+      </div>
+      <div id="feedback">Redirecting...</div>
+      <div id="spinner"></div>
     </div>
+
     <script src="qr.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", (event) => {
         const videoElem = document.getElementById("qr-video");
+        const qrBoxOverlay = document.getElementById("qr-box-overlay");
+        const feedback = document.getElementById("feedback");
+        const spinner = document.getElementById("spinner");
 
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" } })
@@ -82,7 +175,15 @@
                   imageData.height
                 );
                 if (code) {
-                  window.location.href = code.data;
+                  // Show feedback
+                  qrBoxOverlay.classList.add("green-border");
+                  feedback.style.display = "block";
+                  spinner.style.display = "block";
+
+                  // Delay for user feedback, then redirect
+                  setTimeout(() => {
+                    window.location.href = code.data.concat('&API_KEY=4a940fa92292facc178cc905ad6af77e');
+                  }, 2000);
                 }
               }
               requestAnimationFrame(scanFrame);
