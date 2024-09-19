@@ -45,7 +45,7 @@
       <video id="qr-video" autoplay playsinline></video>
       <div id="qr-box-overlay"></div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.1.1/dist/jsQR.js"></script>
+    <script src="qr.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", (event) => {
         const videoElem = document.getElementById("qr-video");
@@ -82,7 +82,6 @@
                   imageData.height
                 );
                 if (code) {
-                  alert(`QR Code Scanned: ${code.data}`);
                   window.location.href = code.data;
                 }
               }
