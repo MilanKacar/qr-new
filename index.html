@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Scanner</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+
+      #qr-video-container {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        overflow: hidden;
+      }
+
+      #qr-video {
+        width: 100%;
+        display: block;
+        margin: 0 auto;
+      }
+
+      #qr-box-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 70%;
+        aspect-ratio: 1/1; /* Maintain square aspect ratio */
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7); /* Full screen overlay */
+        border-radius: 10px; /* Rounded corners */
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="qr-video-container">
+      <video id="qr-video" autoplay playsinline></video>
+      <div id="qr-box-overlay"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.1.1/dist/jsQR.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        const videoElem = document.getElementById("qr-video");
+
+        navigator.mediaDevices
+          .getUserMedia({ video: { facingMode: "environment" } })
+          .then((stream) => {
+            videoElem.srcObject = stream;
+            videoElem.play();
+
+            const canvasElement = document.createElement("canvas");
+            const canvasContext = canvasElement.getContext("2d");
+
+            const scanFrame = () => {
+              if (videoElem.readyState === videoElem.HAVE_ENOUGH_DATA) {
+                canvasElement.width = videoElem.videoWidth;
+                canvasElement.height = videoElem.videoHeight;
+                canvasContext.drawImage(
+                  videoElem,
+                  0,
+                  0,
+                  canvasElement.width,
+                  canvasElement.height
+                );
+                const imageData = canvasContext.getImageData(
+                  0,
+                  0,
+                  canvasElement.width,
+                  canvasElement.height
+                );
+                const code = jsQR(
+                  imageData.data,
+                  imageData.width,
+                  imageData.height
+                );
+                if (code) {
+                  alert(`QR Code Scanned: ${code.data}`);
+                  window.location.href = code.data;
+                }
+              }
+              requestAnimationFrame(scanFrame);
+            };
+
+            scanFrame(); // Start scanning frames
+          })
+          .catch((error) => {
+            console.error("Error accessing camera:", error);
+          });
+      });
+    </script>
+  </body>
+</html>
